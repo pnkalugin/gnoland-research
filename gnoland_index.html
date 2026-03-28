@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gno.land — Глубокое исследование проекта & $GNOT</title>
+<meta name="description" content="Подробный ресёрч gno.land: технология, токеномика GNOT, аirdrop-чекер, перспективы, сравнение с конкурентами, прогноз цены токена.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:     #060a08;
+  --bg2:    #0c110e;
+  --bg3:    #111a14;
+  --bg4:    #162019;
+  --border: rgba(74,255,120,0.08);
+  --border2:rgba(74,255,120,0.18);
+  --green:  #3dba62;
+  --green2: #56de7c;
+  --green3: #1a4a2a;
+  --text:   #d4f0dc;
+  --muted:  #5a8868;
+  --dim:    #2a3e30;
+  --amber:  #d4a237;
+  --red:    #c95050;
+  --blue:   #4a9eff;
+  --mono:   'JetBrains Mono', monospace;
+  --head:   'Syne', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* scanline effect */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* progress bar */
+.progress { position: fixed; top: 0; left: 0; height: 2px; background: var(--green); z-index: 200; width: 0%; transition: width 0.1s; }
+
+/* HEADER */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6,10,8,0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 clamp(16px,4vw,64px);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 54px;
+}
+.logo {
+  font-size: 13px; font-weight: 500; color: var(--green);
+  letter-spacing: 0.06em;
+  display: flex; align-items: center; gap: 8px;
+}
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.nav { display: flex; gap: 2px; }
+.npill {
+  font-family: var(--mono); font-size: 11px; font-weight: 400;
+  padding: 4px 12px; border-radius: 3px; border: none;
+  background: transparent; color: var(--muted); cursor: pointer;
+  letter-spacing: 0.04em; transition: all .15s;
+}
+.npill:hover { color: var(--green); background: var(--bg3); }
+.npill.active { color: var(--green); background: var(--bg3); border: 1px solid var(--border2); }
+
+/* HERO */
+.hero {
+  padding: clamp(48px,8vw,100px) clamp(16px,4vw,64px) clamp(32px,5vw,64px);
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(61,186,98,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(61,186,98,0.08); border: 1px solid var(--border2);
+  border-radius: 3px; padding: 4px 12px;
+  font-size: 11px; color: var(--green); letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 24px;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green2); animation: blink .8s infinite; }
+h1 {
+  font-family: var(--head); font-size: clamp(32px,5vw,64px);
+  font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;
+  color: var(--text); max-width: 800px; margin-bottom: 20px;
+}
+h1 .hl { color: var(--green); }
+.hero-sub { font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.7; margin-bottom: 28px; }
+.hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+.hm { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.hm::before { content: '//'; color: var(--dim); }
+
+/* STATS */
+.stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); border-bottom: 1px solid var(--border); }
+.stat { padding: 24px clamp(16px,3vw,40px); border-right: 1px solid var(--border); }
+.stat:last-child { border-right: none; }
+.stat-val { font-family: var(--head); font-size: 26px; font-weight: 800; color: var(--green); display: block; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* SECTIONS */
+.container { max-width: 1140px; margin: 0 auto; padding: 0 clamp(16px,4vw,64px); }
+.section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+.sec-head { display: flex; align-items: center; gap: 14px; margin-bottom: 36px; }
+.sec-num { font-size: 11px; color: var(--green); letter-spacing: 0.1em; font-weight: 500; }
+h2 { font-family: var(--head); font-size: clamp(20px,2.5vw,26px); font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+h3 { font-family: var(--head); font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+
+/* CARDS */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 22px 26px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-green { border-left: 2px solid var(--green); }
+.card-amber { border-left: 2px solid var(--amber); }
+.card-red   { border-left: 2px solid var(--red); }
+.card-blue  { border-left: 2px solid var(--blue); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 14px; }
+
+p.body { font-size: 14px; color: rgba(212,240,220,0.7); line-height: 1.75; }
+.tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 2px; margin: 2px; letter-spacing: 0.05em; }
+.tg { background: rgba(61,186,98,.1); color: var(--green); border: 1px solid rgba(61,186,98,.2); }
+.ta { background: rgba(212,162,55,.1); color: var(--amber); border: 1px solid rgba(212,162,55,.2); }
+.tr { background: rgba(201,80,80,.1); color: var(--red); border: 1px solid rgba(201,80,80,.2); }
+.tb { background: rgba(74,158,255,.1); color: var(--blue); border: 1px solid rgba(74,158,255,.2); }
+hr.soft { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+ul.li-list { list-style: none; padding: 0; }
+ul.li-list li { font-size: 13px; color: rgba(212,240,220,.65); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+ul.li-list li::before { content: '>'; color: var(--green); flex-shrink: 0; }
+ul.li-list li:last-child { border-bottom: none; }
+
+/* CODE BLOCK */
+.code-block {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 4px; padding: 16px 20px;
+  font-size: 12px; color: var(--green2); line-height: 1.6;
+  overflow-x: auto;
+}
+.code-block .c { color: var(--muted); }
+.code-block .k { color: #56de7c; }
+.code-block .s { color: var(--amber); }
+
+/* AIRDROP SECTION */
+.airdrop-hero {
+  background: linear-gradient(135deg, rgba(61,186,98,0.06), rgba(26,74,42,0.04));
+  border: 1px solid rgba(61,186,98,0.2);
+  border-radius: 4px; padding: 32px 36px;
+  margin-bottom: 20px;
+}
+.airdrop-title {
+  font-family: var(--head); font-size: 22px; font-weight: 800;
+  color: var(--green); margin-bottom: 8px; letter-spacing: -0.01em;
+}
+.airdrop-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.criteria-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 12px; }
+.criteria-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.ci-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.ci-text { font-size: 12px; color: rgba(212,240,220,.75); line-height: 1.55; }
+.ci-text strong { color: var(--green); font-weight: 500; display: block; margin-bottom: 2px; }
+.warning-box {
+  background: rgba(212,162,55,.06); border: 1px solid rgba(212,162,55,.2);
+  border-radius: 4px; padding: 14px 18px;
+  font-size: 13px; color: var(--amber); display: flex; gap: 10px; align-items: flex-start;
+  margin-top: 14px;
+}
+.checker-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--green3); border: 1px solid var(--border2);
+  color: var(--green2); font-size: 13px; padding: 10px 20px; border-radius: 3px;
+  text-decoration: none; transition: all .15s; margin-top: 16px;
+}
+.checker-link:hover { background: rgba(61,186,98,.18); border-color: var(--green); }
+
+/* SCORE BARS */
+.score-row { display: flex; align-items: center; gap: 12px; margin: 7px 0; }
+.score-name { font-size: 11px; color: var(--muted); width: 170px; flex-shrink: 0; letter-spacing: 0.04em; text-transform: uppercase; }
+.score-track { flex: 1; height: 3px; background: var(--dim); border-radius: 2px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 2px; }
+.score-num { font-size: 11px; color: var(--text); width: 28px; text-align: right; }
+
+/* TABLE */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
+thead th { text-align: left; padding: 10px 14px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border2); font-weight: 500; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+tbody tr:hover { background: var(--bg3); }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 12px 14px; color: rgba(212,240,220,.75); vertical-align: middle; }
+td:first-child { color: var(--text); font-weight: 500; }
+.win { color: var(--green); font-weight: 500; }
+.lose { color: var(--red); }
+.neu { color: var(--amber); }
+
+/* CHART */
+.chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 22px 26px; margin-bottom: 14px; }
+.chart-title { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+.chart-wrap { position: relative; width: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; font-size: 11px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend i { width: 8px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+
+/* TOKENOMICS RING */
+.tokenomics { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+@media(max-width:640px){ .tokenomics { grid-template-columns: 1fr; } }
+
+/* SOCIAL */
+.social-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; }
+.scard { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+.scard-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.savatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--head); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.sname { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--head); }
+.shandle { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.stext { font-size: 12px; color: rgba(212,240,220,.65); line-height: 1.65; }
+.sent-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 6px; }
+.sent-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; width: 80px; }
+.sent-bar { flex: 1; height: 3px; background: var(--dim); border-radius: 2px; overflow: hidden; }
+.sent-fill { height: 100%; border-radius: 2px; }
+.sent-val { font-size: 11px; min-width: 32px; text-align: right; }
+
+/* PRICE SCENARIOS */
+.scenarios { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin-bottom: 20px; }
+.scenario { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+.sc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.sc-price { font-family: var(--head); font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.sc-mcap { font-size: 12px; color: var(--muted); }
+.sc-desc { font-size: 11px; color: rgba(212,240,220,.55); margin-top: 10px; line-height: 1.55; }
+
+/* ROADMAP */
+.roadmap { position: relative; padding-left: 24px; }
+.roadmap::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--border2); }
+.rm-item { position: relative; margin-bottom: 24px; }
+.rm-item::before { content: ''; position: absolute; left: -28px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--bg); border: 1px solid var(--green); }
+.rm-item.done::before { background: var(--green); }
+.rm-item.active::before { background: var(--green2); animation: blink .8s infinite; }
+.rm-date { font-size: 10px; color: var(--green); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+.rm-title { font-size: 14px; font-weight: 500; color: var(--text); font-family: var(--head); margin-bottom: 4px; }
+.rm-text { font-size: 12px; color: var(--muted); }
+
+/* RISK MATRIX */
+.risk-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px){ .risk-matrix { grid-template-columns: 1fr; } }
+.risk-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; }
+.risk-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.risk-name { font-size: 13px; font-weight: 500; color: var(--text); font-family: var(--head); }
+.risk-badge { font-size: 10px; padding: 2px 8px; border-radius: 2px; letter-spacing: .05em; }
+.risk-text { font-size: 12px; color: rgba(212,240,220,.6); line-height: 1.55; }
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 28px clamp(16px,4vw,64px); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.ft { font-size: 11px; color: var(--muted); }
+.ft a { color: var(--green); text-decoration: none; }
+.disc { font-size: 11px; color: var(--dim); font-style: italic; max-width: 500px; }
+
+/* ANIM */
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.fadein { animation: fadeUp .5s ease backwards; }
+
+/* RESP */
+@media(max-width:600px){ .nav { display: none; } .tokenomics { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    gno.land // research_report_2026
+  </div>
+  <nav class="nav">
+    <button class="npill active" onclick="goto('overview')">Обзор</button>
+    <button class="npill" onclick="goto('tech')">Технология</button>
+    <button class="npill" onclick="goto('airdrop')">Аirdrop</button>
+    <button class="npill" onclick="goto('token')">Токен</button>
+    <button class="npill" onclick="goto('compare')">Конкуренты</button>
+    <button class="npill" onclick="goto('social')">Комьюнити</button>
+    <button class="npill" onclick="goto('forecast')">Прогноз</button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge"><div class="live-dot"></div> Beta Mainnet запущен 25 марта 2026</div>
+    <h1>gno.land —<br>«GitHub<br>смарт-контрактов»</h1>
+    <p class="hero-sub">Глубокое исследование проекта Jae Kwon (сооснователя Cosmos & Tendermint): технология, токеномика $GNOT, аirdrop, преимущества, конкуренты, прогноз цены.</p>
+    <div class="hero-meta">
+      <span class="hm">Основан Jae Kwon, 2021</span>
+      <span class="hm">L1 IBC-совместимый</span>
+      <span class="hm">Язык: Gnolang (Go-based)</span>
+      <span class="hm">$GNOT: 1B total supply</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat fadein"><span class="stat-val">~10M</span><span class="stat-label">Go-разработчиков в мире</span></div>
+  <div class="stat fadein"><span class="stat-val">1B</span><span class="stat-label">$GNOT total supply</span></div>
+  <div class="stat fadein"><span class="stat-val">750M</span><span class="stat-label">GNOT на аirdrop (75%)</span></div>
+  <div class="stat fadein"><span class="stat-val">5 лет</span><span class="stat-label">разработки до mainnet</span></div>
+</div>
+
+<!-- OVERVIEW -->
+<section id="overview" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">01 //</span><h2>Что такое gno.land</h2></div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card card-green">
+        <h3>Идея проекта</h3>
+        <p class="body">Gno.land — L1 смарт-контрактная платформа нового поколения, созданная Jae Kwon после ухода из Cosmos. Ключевая идея: сделать блокчейн «GitHub для смарт-контрактов» — пространство, где весь код прозрачен, аудируем и переиспользуем, как open-source пакеты в Go.</p>
+      </div>
+      <div class="card card-green">
+        <h3>Три проблемы, которые решает</h3>
+        <ul class="li-list">
+          <li>Отсутствие прозрачности: код Solidity-контрактов часто закрыт или не аудируем</li>
+          <li>Несправедливость для разработчиков: вклад не монетизируется системно</li>
+          <li>Высокий порог входа: Solidity/Rust сложны для Web2-разработчиков</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3 style="font-size:13px">GnoVM</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Уникальная виртуальная машина: интерпретирует Go-код детерминированно. AST-based (не байткод) → весь стек читаем любым Go-разработчиком.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:13px">Realms</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Смарт-контракты с состоянием. Авто-персистентны, авто-Merkle-изированы. Не нужно сериализовать объекты — GnoVM делает это автоматически.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:13px">Proof of Contribution</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Вместо Proof-of-Stake — вклад в код, документацию, аудиты. GovDAO с 3 тирами управляет сетью через on-chain голосование.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:13px">IBC-совместимость</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Tendermint2 под капотом. Полная совместимость с Cosmos-экосистемой через Inter-Blockchain Communication protocol.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:13px">Composability</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Контракты импортируются как Go-пакеты. Type-checked взаимодействие между realm'ами — принципиально безопаснее, чем ABI-вызовы в EVM.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:13px">On-chain Boards</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.65">Децентрализованный форум на цепи. Первое working dApp-приложение gno.land — социальная сеть полностью на блокчейне.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">02 //</span><h2>Технология & архитектура</h2></div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div>
+        <div class="card card-green" style="margin-bottom:14px">
+          <h3>Gnolang = Go для блокчейна</h3>
+          <p class="body" style="margin-bottom:12px">~99% идентичен Go. 10+ миллионов Go-разработчиков могут писать смарт-контракты с нулевой кривой обучения.</p>
+          <div class="code-block"><span class="k">package</span> foo
+
+<span class="k">import</span> <span class="s">"gno.land/p/demo/avl"</span>
+
+<span class="c">// Realm — смарт-контракт с состоянием</span>
+<span class="k">var</span> data *avl.Tree
+
+<span class="k">func</span> Set(key, value <span class="k">string</span>) {
+    data.Set(key, value)
+}
+
+<span class="c">// Auto-persisted. No serialization needed.</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Стек технологий</h3>
+          <ul class="li-list">
+            <li>Tendermint2 consensus — форк оригинального Tendermint</li>
+            <li>GnoVM — AST-интерпретатор Go-кода on-chain</li>
+            <li>Gnolang — детерминированный subset of Go</li>
+            <li>GovDAO V3 — трёхуровневое on-chain управление</li>
+            <li>Adena Wallet — официальный кошелёк экосистемы</li>
+            <li>Gnoswap — DEX нативный для gno.land</li>
+            <li>Gno Playground — браузерная IDE для разработки</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="card card-blue" style="margin-bottom:14px">
+          <h3>Gnolang vs конкуренты</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Параметр</th><th>Gnolang</th><th>Solidity</th><th>Rust/WASM</th></tr></thead>
+              <tbody>
+                <tr><td>Базовый язык</td><td class="win">Go (13 лет)</td><td>Solidity only</td><td>Rust</td></tr>
+                <tr><td>Порог входа</td><td class="win">Низкий (Go)</td><td>Средний</td><td class="lose">Высокий</td></tr>
+                <tr><td>Аудируемость</td><td class="win">Полная (AST)</td><td class="neu">Частичная</td><td class="neu">Средняя</td></tr>
+                <tr><td>Composability</td><td class="win">Type-safe import</td><td class="lose">ABI-вызовы</td><td class="neu">Ограничена</td></tr>
+                <tr><td>Персистентность</td><td class="win">Автоматическая</td><td class="lose">Ручная</td><td class="lose">Ручная</td></tr>
+                <tr><td>Зрелость</td><td class="lose">Новый (2022)</td><td class="win">10+ лет</td><td class="neu">5+ лет</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <h3>Производительность</h3>
+          <div style="margin:8px 0">
+            <div class="score-row"><span class="score-name">Безопасность кода</span><div class="score-track"><div class="score-fill" style="width:92%;background:var(--green)"></div></div><span class="score-num">92</span></div>
+            <div class="score-row"><span class="score-name">Читаемость</span><div class="score-track"><div class="score-fill" style="width:95%;background:var(--green)"></div></div><span class="score-num">95</span></div>
+            <div class="score-row"><span class="score-name">Composability</span><div class="score-track"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-num">90</span></div>
+            <div class="score-row"><span class="score-name">Developer UX</span><div class="score-track"><div class="score-fill" style="width:85%;background:var(--blue)"></div></div><span class="score-num">85</span></div>
+            <div class="score-row"><span class="score-name">Экосистема (сейчас)</span><div class="score-track"><div class="score-fill" style="width:28%;background:var(--amber)"></div></div><span class="score-num">28</span></div>
+            <div class="score-row"><span class="score-name">Зрелость рантайма</span><div class="score-track"><div class="score-fill" style="width:42%;background:var(--amber)"></div></div><span class="score-num">42</span></div>
+          </div>
+        </div>
+
+        <div class="card card-amber">
+          <h3>Риски технологии</h3>
+          <ul class="li-list">
+            <li>Gnolang — новый язык, требует верификации рынком</li>
+            <li>GnoVM ещё не прошёл production-аудиты</li>
+            <li>Трансферы GNOT заблокированы до следующей фазы</li>
+            <li>Возможны state rollbacks в beta-период</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AIRDROP -->
+<section id="airdrop" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">03 //</span><h2>$GNOT Airdrop — чекер и условия</h2></div>
+
+    <div class="airdrop-hero">
+      <div class="airdrop-title">🔥 Gnoland Beta Mainnet запущен 25 марта 2026</div>
+      <div class="airdrop-sub">GNOT Airdrop Checker теперь доступен. Токены распределены, но трансферы заблокированы до голосования GovDAO.</div>
+      <a class="checker-link" href="https://gno.land/r/gnoland/coins" target="_blank">
+        → Проверить GNOT баланс на gno.land/r/gnoland/coins
+      </a>
+      <div class="warning-box">
+        <span>⚠</span>
+        <span><strong>НЕ подключай кошелёк.</strong> Только скопируй и вставь публичный адрес (Cosmos/AtomOne). Никогда не вводи seed-фразу на сторонних сайтах.</span>
+      </div>
+    </div>
+
+    <div class="criteria-list" style="margin-bottom:20px">
+      <div class="criteria-item">
+        <div class="ci-icon">⬡</div>
+        <div class="ci-text">
+          <strong>ATOM стейкеры</strong>
+          Снапшот 20 мая 2022. Базовое условие: ATOM в стейкинге (не на CEX). 750 млн GNOT распределено пропорционально.
+        </div>
+      </div>
+      <div class="criteria-item">
+        <div class="ci-icon">🗳</div>
+        <div class="ci-text">
+          <strong>Бонус за Proposal #69</strong>
+          Голосовавшие NO или NO WITH VETO на Cosmos Prop #69 (против CosmWasm) получают увеличенную аллокацию. YES-голос = почти нулевой аirdrop.
+        </div>
+      </div>
+      <div class="criteria-item">
+        <div class="ci-icon">⚛</div>
+        <div class="ci-text">
+          <strong>ATONE стейкеры</strong>
+          Держатели AtomOne ($ATONE) — форка Cosmos Hub под руководством Jae Kwon — также имеют право на аirdrop.
+        </div>
+      </div>
+      <div class="criteria-item">
+        <div class="ci-icon">✗</div>
+        <div class="ci-text">
+          <strong>Исключения</strong>
+          ATOM на централизованных биржах — не учитываются. Только self-custody кошельки.
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-amber" style="margin-bottom:14px">
+      <h3 style="color:var(--amber)">Важно про текущий статус токена</h3>
+      <p class="body" style="margin-top:8px">В Beta Mainnet фазе GNOT <strong style="color:var(--amber)">не переводится</strong>. Токены можно видеть на балансе и использовать для взаимодействия с chain (деплой realm'ов, governance), но прямые трансферы между адресами заблокированы. Разблокировка произойдёт после успешного голосования GovDAO в следующей фазе — Feature Complete Mainnet.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Как проверить баланс (пошагово)</h3>
+        <ul class="li-list">
+          <li>Открой gno.land/r/gnoland/coins в браузере</li>
+          <li>Скопируй свой Cosmos-адрес (начинается с cosmos1...)</li>
+          <li>Или AtomOne-адрес (начинается с atone1...)</li>
+          <li>Вставь адрес в поле поиска — не подключай кошелёк</li>
+          <li>Адрес g1... (gno.land) соответствует тому же seed что и cosmos1...</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Распределение GNOT (1 млрд total)</h3>
+        <div class="chart-wrap" style="height:200px"><canvas id="distChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKEN -->
+<section id="token" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">04 //</span><h2>Утилити $GNOT & прогноз цены</h2></div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card card-green">
+        <h3>Утилити токена $GNOT</h3>
+        <ul class="li-list" style="margin-top:10px">
+          <li>Gas-токен: оплата всех транзакций в сети (спам-превенция)</li>
+          <li>Деплой realm'ов и packages на цепи</li>
+          <li>Стейкинг у валидаторов → получение части fee</li>
+          <li>Участие в on-chain governance через GovDAO</li>
+          <li>Рента хранилища для realm state (monthly fees)</li>
+          <li>Будущее: IBC/ICS-комиссии, кросс-чейн активность</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Токеномика</h3>
+        <div class="tokenomics">
+          <div>
+            <ul class="li-list">
+              <li><strong style="color:var(--green)">750M (75%)</strong> — аirdrop ATOM/ATONE</li>
+              <li><strong style="color:var(--blue)">100M (10%)</strong> — NewTendermint & Jae</li>
+              <li><strong style="color:var(--amber)">100M (10%)</strong> — Core Mission DAO</li>
+              <li><strong style="color:var(--muted)">50M (5%)</strong> — ранние контрибьюторы</li>
+            </ul>
+            <div style="margin-top:12px">
+              <div class="tag tg">Нет инфляции</div>
+              <div class="tag tg">Нет вестинга</div>
+              <div class="tag ta">Fee-burn дефляция</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:180px"><canvas id="tokChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <h3 style="margin-bottom:16px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Сценарии оценки $GNOT (предварительный анализ)</h3>
+      <div class="scenarios">
+        <div class="scenario" style="border-color:rgba(201,80,80,.2)">
+          <div class="sc-label" style="color:var(--red)">Медвежий</div>
+          <div class="sc-price" style="color:var(--red)">$0.30–0.80</div>
+          <div class="sc-mcap">MCap: $300M–$800M</div>
+          <div class="sc-desc">Нет листинга на Tier-1 биржах. Слабый спрос на Gnolang. Медвежий рынок. Dump после анлока.</div>
+        </div>
+        <div class="scenario" style="border-color:rgba(212,162,55,.2)">
+          <div class="sc-label" style="color:var(--amber)">Базовый</div>
+          <div class="sc-price" style="color:var(--amber)">$1.50–4.00</div>
+          <div class="sc-mcap">MCap: $1.5B–$4B</div>
+          <div class="sc-desc">Листинг на Binance/Coinbase. Умеренный developer-adoption. Сравним с ATOM на старте.</div>
+        </div>
+        <div class="scenario" style="border-color:rgba(61,186,98,.25)">
+          <div class="sc-label" style="color:var(--green)">Бычий</div>
+          <div class="sc-price" style="color:var(--green)">$5–15</div>
+          <div class="sc-mcap">MCap: $5B–$15B</div>
+          <div class="sc-desc">Массовый Go-developer onboarding. Killer dApps. Bullrun + институциональный интерес.</div>
+        </div>
+        <div class="scenario" style="border-color:rgba(74,158,255,.25)">
+          <div class="sc-label" style="color:var(--blue)">Moonshot</div>
+          <div class="sc-price" style="color:var(--blue)">$20–50+</div>
+          <div class="sc-mcap">MCap: $20B–$50B+</div>
+          <div class="sc-desc">«GitHub of Smart Contracts» реализован. Миллионы контрактов, top-5 L1 по TVL и активности.</div>
+        </div>
+      </div>
+      <div class="card card-amber">
+        <p style="font-size:12px;color:var(--muted)"><strong style="color:var(--amber)">Дисклеймер:</strong> Оценка носит предварительный характер. GNOT не торгуется, нет ценовой истории. Сильные факторы давления: 750M токенов без вестинга у аirdrop-получателей = потенциальный sell pressure при листинге. Сдерживающий фактор: токены заблокированы до Phase 2, что даст времяfor ecosystem development.</p>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Сравнение: рыночная капитализация аналогичных L1 при запуске (млрд $)</div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>gno.land (прогноз базовый)</span>
+        <span><i style="background:var(--blue)"></i>Cosmos ATOM (запуск 2019)</span>
+        <span><i style="background:var(--amber)"></i>Aptos APT (запуск 2022)</span>
+        <span><i style="background:#a07fde"></i>Sui (запуск 2023)</span>
+      </div>
+      <div class="chart-wrap" style="height:240px"><canvas id="launchChart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">05 //</span><h2>Конкуренты & позиционирование</h2></div>
+
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <table>
+        <thead>
+          <tr><th>Проект</th><th>Язык</th><th>Подход</th><th>Dev-pool</th><th>Экосистема</th><th>Статус</th><th>Gnolang преимущество</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ethereum / EVM</td>
+            <td>Solidity</td>
+            <td>Smart contracts</td>
+            <td class="neu">~500K</td>
+            <td class="win">Огромная</td>
+            <td class="win">Зрелый</td>
+            <td class="win">Читаемость, Go-пул, composability</td>
+          </tr>
+          <tr>
+            <td>Solana</td>
+            <td>Rust</td>
+            <td>High throughput</td>
+            <td class="neu">~300K</td>
+            <td class="win">Большая</td>
+            <td class="win">Зрелый</td>
+            <td class="win">Стабильность, простота языка</td>
+          </tr>
+          <tr>
+            <td>Cosmos / CosmWasm</td>
+            <td>Rust/WASM</td>
+            <td>IBC хабы</td>
+            <td class="neu">~200K</td>
+            <td class="neu">Средняя</td>
+            <td class="win">Зрелый</td>
+            <td class="win">Нативный Go, без WASM overhead</td>
+          </tr>
+          <tr>
+            <td>Aptos / Sui</td>
+            <td>Move</td>
+            <td>Asset-centric</td>
+            <td class="lose">~50K</td>
+            <td class="neu">Средняя</td>
+            <td class="win">Mainnet</td>
+            <td class="win">~10M Go-разработчиков vs ~50K Move</td>
+          </tr>
+          <tr>
+            <td>Near Protocol</td>
+            <td>Rust / JS</td>
+            <td>Sharding L1</td>
+            <td class="neu">~300K</td>
+            <td class="neu">Средняя</td>
+            <td class="win">Зрелый</td>
+            <td class="win">Полная on-chain прозрачность</td>
+          </tr>
+          <tr>
+            <td style="color:var(--green)"><strong>gno.land</strong></td>
+            <td style="color:var(--green)">Gnolang (Go)</td>
+            <td style="color:var(--green)">GitHub of contracts</td>
+            <td style="color:var(--green)">~10M потенциал</td>
+            <td class="lose">Ранняя стадия</td>
+            <td class="neu">Beta Mainnet</td>
+            <td style="color:var(--green)">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-box">
+        <div class="chart-title">Developer pool: потенциальная аудитория разработчиков</div>
+        <div class="chart-wrap" style="height:260px"><canvas id="devChart"></canvas></div>
+      </div>
+      <div>
+        <div class="card card-green" style="margin-bottom:14px">
+          <h3>Уникальные преимущества gno.land</h3>
+          <ul class="li-list" style="margin-top:8px">
+            <li>Gnolang ≈99% Go — крупнейший потенциальный developer pool (~10M)</li>
+            <li>Весь стек на одном языке — минимальная когнитивная нагрузка</li>
+            <li>AST-интерпретатор — код читается и аудируется как исходник</li>
+            <li>Auto-persisted state — нет ручной сериализации как в Cosmos SDK</li>
+            <li>Import-based composability — type-safe контракт-контракт вызовы</li>
+            <li>Proof of Contribution — справедливое вознаграждение разработчиков</li>
+          </ul>
+        </div>
+        <div class="card card-red">
+          <h3>Слабые стороны</h3>
+          <ul class="li-list" style="margin-top:8px">
+            <li>5 лет разработки без публичного mainnet — потеря momentum</li>
+            <li>Нет VC-капитала — медленный growth vs конкуренты с $500M+</li>
+            <li>Jae Kwon — спорная фигура в Cosmos-комьюнити</li>
+            <li>Нет трансферов токена на beta стадии</li>
+            <li>Путаница с Gnosis (GNO) — разные проекты, похожий тикер</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL -->
+<section id="social" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">06 //</span><h2>Соцсети & настроения комьюнити</h2></div>
+
+    <div class="social-grid" style="margin-bottom:20px">
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(61,186,98,.12);color:var(--green)">JK</div>
+          <div><div class="sname">Jae Kwon (@jaekwon)</div><div class="shandle">Основатель, Cosmos co-founder</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Доверие</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:62%;background:var(--amber)"></div></div>
+          <span class="sent-val" style="color:var(--amber)">62/100</span>
+        </div>
+        <p class="stext">Легендарный технический авторитет — создатель Tendermint и Cosmos. Однако его публичные споры с командой Ignite/AiB и противоречивые заявления снижают доверие части комьюнити. Активен в X, пишет длинные технические посты. Часть аудитории считает gno.land «его личным проектом», а не community-driven.</p>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(61,186,98,.12);color:var(--green)">GN</div>
+          <div><div class="sname">@_gnoland</div><div class="shandle">Официальный аккаунт X</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Активность</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:55%;background:var(--amber)"></div></div>
+          <span class="sent-val" style="color:var(--amber)">55/100</span>
+        </div>
+        <p class="stext">Небольшой аккаунт по меркам L1-проектов — отсутствие агрессивного маркетинга намеренное. Фокус на developer community, не на retail-хайп. Основная активность — Discord. Реакции на Beta Mainnet запуск (март 2026) — умеренный ажиотаж в Cosmos-кругах.</p>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(74,158,255,.12);color:var(--blue)">CS</div>
+          <div><div class="sname">Cosmos комьюнити</div><div class="shandle">Reddit, Twitter, Discord</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Настроение</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:68%;background:var(--green)"></div></div>
+          <span class="sent-val" style="color:var(--green)">68/100</span>
+        </div>
+        <p class="stext">ATOM-холдеры настроены позитивно — аirdrop был анонсирован ещё в 2022 и долго ждали. Критика: «слишком долго разрабатывался», «почему трансферы закрыты». Позитив: «технология фундаментально лучше EVM», «наконец-то запустились». Активные обсуждения на r/cosmosnetwork.</p>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(201,80,80,.12);color:var(--red)">SK</div>
+          <div><div class="sname">Скептики & критики</div><div class="shandle">Twitter/X threads</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Критика</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:45%;background:var(--red)"></div></div>
+          <span class="sent-val" style="color:var(--red)">умеренная</span>
+        </div>
+        <p class="stext">Главные точки критики: «5 лет — слишком долго для L1», «новый язык = маленький ecosystem», «Jae слишком контролирует проект», «трансферы заблокированы — нет ликвидности». Часть Cosmos-OG скептически относится к разрыву с экосистемой. Нет экстремально негативных скандалов (в отличие от MANTRA).</p>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(212,162,55,.12);color:var(--amber)">OB</div>
+          <div><div class="sname">Onbloc / Builders</div><div class="shandle">Экосистемные разработчики</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Поддержка</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:82%;background:var(--green)"></div></div>
+          <span class="sent-val" style="color:var(--green)">82/100</span>
+        </div>
+        <p class="stext">Onbloc (создатели Gnoswap, Adena Wallet) — самый активный экосистемный партнёр. Публикуют детальные технические разборы, реальные use-cases. Developer-комьюнити настроено очень позитивно: Gnolang genuinely решает реальные проблемы разработки смарт-контрактов.</p>
+      </div>
+
+      <div class="scard">
+        <div class="scard-head">
+          <div class="savatar" style="background:rgba(61,186,98,.12);color:var(--green)">DC</div>
+          <div><div class="sname">Discord (официальный)</div><div class="shandle">Основной канал комьюнити</div></div>
+        </div>
+        <div class="sent-row">
+          <span class="sent-label">Активность</span>
+          <div class="sent-bar"><div class="sent-fill" style="width:72%;background:var(--green)"></div></div>
+          <span class="sent-val" style="color:var(--green)">72/100</span>
+        </div>
+        <p class="stext">Discord — главная площадка, не Telegram. Активные каналы для разработчиков, validators-чат, governance-дискуссии. После запуска Beta Mainnet наблюдается рост активности. Технические AMA с Jae Kwon и Manfred Touron хорошо приняты комьюнити.</p>
+      </div>
+    </div>
+
+    <div class="card card-amber">
+      <h3>Общий вывод по комьюнити</h3>
+      <p class="body" style="margin-top:8px">gno.land — проект с <strong style="color:var(--green)">высокой техно-репутацией и низким маркетинговым шумом</strong>. Это нехарактерно для криптопроектов 2024–2026. Отсутствие VC-капитала означает отсутствие агрессивного маркетинга и influencer-кампаний. Комьюнити органическое, разработчики настроены серьёзно. Главный риск комьюнити — нетерпение после 5 лет ожидания mainnet.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FORECAST -->
+<section id="forecast" class="section">
+  <div class="container">
+    <div class="sec-head"><span class="sec-num">07 //</span><h2>Роадмап & перспективы</h2></div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div>
+        <div class="roadmap">
+          <div class="rm-item done">
+            <div class="rm-date">2021–2022</div>
+            <div class="rm-title">Основание & GnoVM</div>
+            <div class="rm-text">Разработка GnoVM, Gnolang, первые тесты. Снапшот ATOM 20 мая 2022.</div>
+          </div>
+          <div class="rm-item done">
+            <div class="rm-date">2022–2024</div>
+            <div class="rm-title">Testnets 1–5</div>
+            <div class="rm-text">Последовательные тесты, Game of Realms, развитие экосистемы. Gnoswap, Adena Wallet запущены.</div>
+          </div>
+          <div class="rm-item done">
+            <div class="rm-date">Июнь 2025</div>
+            <div class="rm-title">Test6 — финальный тестнет</div>
+            <div class="rm-text">GovDAO V3, Token Lock механизм, Valoper Registry. Долгосрочный стабильный тестнет.</div>
+          </div>
+          <div class="rm-item active">
+            <div class="rm-date">25 марта 2026 ✦ СЕЙЧАС</div>
+            <div class="rm-title">Beta Mainnet</div>
+            <div class="rm-text">GNOT распределён (не переводится). dApp разработка, governance тестирование. GNOT Airdrop Checker активен.</div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-date">2026 Q3–Q4 (прогноз)</div>
+            <div class="rm-title">Feature Complete Mainnet</div>
+            <div class="rm-text">GNOT трансферы разблокированы. Листинг на биржах. Sharding и рост TPS. Full social dApp (Boards).</div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-date">2027+</div>
+            <div class="rm-title">Ecosystem Scale</div>
+            <div class="rm-text">IBC/ICS интеграция. Core Mission DAO. Масштабирование developer adoption. Внешние Gnolang-чейны.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="risk-matrix" style="margin-bottom:14px">
+          <div class="risk-item">
+            <div class="risk-head">
+              <span class="risk-name">Developer adoption</span>
+              <span class="risk-badge tg">Высокий потенциал</span>
+            </div>
+            <p class="risk-text">10 млн Go-разработчиков — крупнейший нетронутый пул в blockchain. Если Gnolang получит traction, скорость роста экосистемы может быть взрывной.</p>
+          </div>
+          <div class="risk-item">
+            <div class="risk-head">
+              <span class="risk-name">Конкурентное давление</span>
+              <span class="risk-badge ta">Средний риск</span>
+            </div>
+            <p class="risk-text">EVM dominant. Solana с огромными grants. Move (Aptos/Sui) с $500M+ VC. gno.land должен конкурировать с уже устоявшимися экосистемами.</p>
+          </div>
+          <div class="risk-item">
+            <div class="risk-head">
+              <span class="risk-name">Token unlock pressure</span>
+              <span class="risk-badge tr">Высокий риск</span>
+            </div>
+            <p class="risk-text">750M токенов без вестинга у аirdrop-получателей. При листинге возможен значительный sell pressure. Нет механизма сдерживания кроме лок-механизма Beta phase.</p>
+          </div>
+          <div class="risk-item">
+            <div class="risk-head">
+              <span class="risk-name">Основатель-риск</span>
+              <span class="risk-badge ta">Средний риск</span>
+            </div>
+            <p class="risk-text">Jae Kwon — единственный бесспорный лидер. Его спорные решения и споры с Cosmos-комьюнити создают репутационный риск для проекта.</p>
+          </div>
+        </div>
+
+        <div class="card card-green">
+          <h3>Итоговый прогноз</h3>
+          <div style="margin-top:10px">
+            <div class="score-row"><span class="score-name">Технология</span><div class="score-track"><div class="score-fill" style="width:90%;background:var(--green)"></div></div><span class="score-num">90</span></div>
+            <div class="score-row"><span class="score-name">Команда</span><div class="score-track"><div class="score-fill" style="width:72%;background:var(--amber)"></div></div><span class="score-num">72</span></div>
+            <div class="score-row"><span class="score-name">Рыночный timing</span><div class="score-track"><div class="score-fill" style="width:65%;background:var(--amber)"></div></div><span class="score-num">65</span></div>
+            <div class="score-row"><span class="score-name">Экосистема</span><div class="score-track"><div class="score-fill" style="width:35%;background:var(--red)"></div></div><span class="score-num">35</span></div>
+            <div class="score-row"><span class="score-name">Комьюнити</span><div class="score-track"><div class="score-fill" style="width:60%;background:var(--amber)"></div></div><span class="score-num">60</span></div>
+            <div class="score-row"><span class="score-name">Токеномика</span><div class="score-track"><div class="score-fill" style="width:55%;background:var(--amber)"></div></div><span class="score-num">55</span></div>
+          </div>
+          <hr class="soft">
+          <p style="font-size:12px;color:rgba(212,240,220,.65);line-height:1.65">gno.land — один из технически наиболее продуманных L1-проектов, но на ранней стадии. Потенциал высокий при условии успешного Go-developer onboarding. Разблокировка трансферов — ключевое событие 2026. Рекомендация для аirdrop-получателей: не спешить продавать, дождаться Feature Complete Mainnet и листинга на Tier-1.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(61,186,98,0.04);border:1px solid rgba(61,186,98,0.15);border-radius:4px;padding:28px 32px;margin-top:8px">
+      <div style="font-family:var(--head);font-size:15px;font-weight:700;color:var(--green);margin-bottom:10px">// Финальный вердикт</div>
+      <p style="font-size:14px;color:rgba(212,240,220,0.75);line-height:1.75">gno.land решает реальную проблему: <strong style="color:var(--text)">блокчейн-разработка слишком сложна для большинства программистов</strong>. Gnolang — первая попытка использовать существующий язык с огромной базой разработчиков для смарт-контрактов. Если это сработает — это изменит правила игры. Если нет — проект останется нишевым инструментом для Cosmos-OG. Ключевые катализаторы 2026: разблокировка трансферов, первый Tier-1 листинг, появление killer dApp. <strong style="color:var(--green)">Высокий риск / высокий потенциал</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="ft">© 2026 gno.land Research // <a href="https://gno.land" target="_blank">gno.land</a> // <a href="https://gno.land/r/gnoland/coins" target="_blank">GNOT Checker</a> // Данные актуальны на март 2026</div>
+  <div class="disc">Не является инвестиционной рекомендацией. GNOT не торгуется, оценка предварительная. DYOR.</div>
+</footer>
+
+<script>
+// PROGRESS
+window.addEventListener('scroll',()=>{
+  const p=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  document.getElementById('prog').style.width=p+'%';
+  const secs=['overview','tech','airdrop','token','compare','social','forecast'];
+  let cur=0;
+  secs.forEach((s,i)=>{const el=document.getElementById(s);if(el&&el.getBoundingClientRect().top<120)cur=i;});
+  document.querySelectorAll('.npill').forEach((n,i)=>n.classList.toggle('active',i===cur));
+});
+
+function goto(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});}
+
+const gc='rgba(61,186,98,1)', ga='rgba(61,186,98,0.15)', grid='rgba(61,186,98,0.07)', tick='#5a8868';
+
+// DIST CHART
+new Chart(document.getElementById('distChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Аirdrop ATOM/ATONE (75%)','NewTendermint & Jae (10%)','Core Mission DAO (10%)','Ранние контрибьюторы (5%)'],
+    datasets:[{data:[750,100,100,50],backgroundColor:['#3dba62','#4a9eff','#d4a237','#5a8868'],borderWidth:0,hoverOffset:4}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'68%'}
+});
+
+// TOK CHART
+new Chart(document.getElementById('tokChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Аirdrop (75%)','Team/DAO (15%)','Contributors (5%)','Резерв (5%)'],
+    datasets:[{data:[750,200,50,0],backgroundColor:['#3dba62','#4a9eff','#d4a237','#2a3e30'],borderWidth:0}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}
+});
+
+// LAUNCH COMP
+new Chart(document.getElementById('launchChart'),{
+  type:'bar',
+  data:{
+    labels:['Медвежий','Базовый','Бычий','Moonshot'],
+    datasets:[
+      {label:'gno.land GNOT (сценарии)',data:[0.5,2.5,8,30],backgroundColor:['rgba(201,80,80,0.7)','rgba(212,162,55,0.7)','rgba(61,186,98,0.7)','rgba(74,158,255,0.7)'],borderRadius:3},
+      {label:'ATOM на старте',data:[0.8,0.8,0.8,0.8],type:'line',borderColor:'#4a9eff',backgroundColor:'transparent',borderWidth:1,pointRadius:0,borderDash:[4,4]},
+      {label:'Aptos при запуске',data:[3.5,3.5,3.5,3.5],type:'line',borderColor:'#d4a237',backgroundColor:'transparent',borderWidth:1,pointRadius:0,borderDash:[4,4]}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:grid},ticks:{color:tick,font:{family:'JetBrains Mono',size:10},callback:v=>'$'+v+'B'},beginAtZero:true},x:{grid:{display:false},ticks:{color:'#d4f0dc',font:{family:'JetBrains Mono',size:11}}}}}
+});
+
+// DEV CHART
+new Chart(document.getElementById('devChart'),{
+  type:'bar',
+  data:{
+    labels:['Go/Gnolang\n(потенциал)','Solidity','Rust','Move','CosmWasm'],
+    datasets:[{
+      data:[10000,500,3000,50,200],
+      backgroundColor:['rgba(61,186,98,0.7)','rgba(74,158,255,0.5)','rgba(212,162,55,0.5)','rgba(160,127,222,0.5)','rgba(90,136,104,0.5)'],
+      borderRadius:3,borderSkipped:false
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:grid},ticks:{color:tick,font:{family:'JetBrains Mono',size:10},callback:v=>v/1000+'M'},beginAtZero:true},x:{grid:{display:false},ticks:{color:'#d4f0dc',font:{family:'JetBrains Mono',size:10}}}}}
+});
+</script>
+</body>
+</html>
